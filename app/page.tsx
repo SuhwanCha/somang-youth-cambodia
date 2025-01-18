@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import Image from "next/image";
 import { PrayerTopic } from '../types';
@@ -8,9 +7,8 @@ import data from '../data/people.json';
 import styles from './page.module.css';
 
 function ClientContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const name = searchParams.get('name');
+
+
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<PrayerTopic | null>(null);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
@@ -18,15 +16,15 @@ function ClientContent() {
   const people: PrayerTopic[] = data;
 
   useEffect(() => {
-    if (name) {
-      const person = people.find(p => p.name === name);
+    // URL에서 초기 name 파라미터 읽기
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialName = urlParams.get('name');
+    if (initialName) {
+      const person = people.find(p => p.name === initialName);
       setSelectedPerson(person || null);
       setIsPopupVisible(true);
-    } else {
-      setSelectedPerson(null);
-      setIsPopupVisible(false);
     }
-  }, [name, people]);
+  }, [people]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,12 +38,39 @@ function ClientContent() {
   }, []);
 
   const handleClick = (name: string) => {
-    router.replace(`/?name=${encodeURIComponent(name)}`, { scroll: false });
+    const person = people.find(p => p.name === name);
+    setSelectedPerson(person || null);
+    setIsPopupVisible(true);
+    // URL 업데이트 (history state 사용)
+    const newUrl = `${window.location.pathname}?name=${encodeURIComponent(name)}`;
+    window.history.pushState({}, '', newUrl);
   };
 
   const closePopup = () => {
-    router.replace('/', { scroll: false });
+    setSelectedPerson(null);
+    setIsPopupVisible(false);
+    // URL 업데이트 (history state 사용)
+    window.history.pushState({}, '', window.location.pathname);
   };
+
+  // popstate 이벤트 리스너 추가
+  useEffect(() => {
+    const handlePopState = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const name = urlParams.get('name');
+      if (name) {
+        const person = people.find(p => p.name === name);
+        setSelectedPerson(person || null);
+        setIsPopupVisible(true);
+      } else {
+        setSelectedPerson(null);
+        setIsPopupVisible(false);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [people]);
 
   const handleScrollClick = () => {
     const gridElement = document.querySelector(`.${styles.guideText}`);
@@ -158,7 +183,6 @@ function ClientContent() {
             className={styles.githubLink}
           >
             <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
             </svg>
             View source on GitHub
           </a>

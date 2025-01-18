@@ -5,7 +5,8 @@ const nextConfig: NextConfig = {
   images: {
     domains: ["cambodia.suhwan.me"],
     unoptimized: true,
-  }
+  },
+  output: 'export',
 };
 
 export default nextConfig;
