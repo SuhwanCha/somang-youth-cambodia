@@ -27,7 +27,7 @@ jobs:
       - name: Copy static files to .next directory
         run: |
           mkdir -p .next/static
-          cp -r public/static .next/static/
+          cp -r static .next/static/
 
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
