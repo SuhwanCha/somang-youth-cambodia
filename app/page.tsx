@@ -116,13 +116,22 @@ function ClientContent() {
         padding: '16px',
       }}
     >
-      <Image
-        src="/static/header.png"
-        alt="Header Image"
-        width={500}
-        height={200}
-        style={{ width: '100%', height: 'auto' }}
-      />
+      <div style={{
+        width: '100%',
+        position: 'relative',
+        aspectRatio: '1124/2622',
+      }}>
+        <Image
+          src="/static/header.png"
+          alt="Header Image"
+          fill
+          priority
+          sizes="100vw"
+          style={{
+            objectFit: 'contain',
+          }}
+        />
+      </div>
 
       <p className={styles.guideText}>
         👆 사진을 클릭하면 각 선교팀원의 기도제목을 볼 수 있습니다
