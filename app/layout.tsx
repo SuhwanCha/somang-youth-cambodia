@@ -25,6 +25,15 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body
+        style={
+          {
+            margin: 0,
+            padding: 0,
+            fontFamily: "var(--font-geist-sans)",
+            color: "black",
+            backgroundColor: "#f0f0f0",
+          }
+        }
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <div
@@ -34,7 +43,7 @@ export default function RootLayout({
             backgroundAttachment: 'fixed',
             backgroundPosition: 'center',
             minHeight: '100vh',
-            maxWidth: '768px',
+            maxWidth: '480px',
             margin: '0 auto',
             backgroundColor: 'white',
           }}
