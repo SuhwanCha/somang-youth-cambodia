@@ -11,15 +11,7 @@
     },
     "rewrites": [
       {
-        "source": "/_next/static/**",
-        "destination": "/_next/static/**"
-      },
-      {
-        "source": "/static/**",
-        "destination": "/static/**"
-      },
-      {
-        "source": "/**",
+        "source": "**",
         "destination": "/index.html"
       }
     ]
