@@ -33,6 +33,20 @@
   transition: all 0.3s ease;
 }
 
+.imageContainer {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.fourThree {
+  aspect-ratio: 3/4;
+}
+
+.oneOne {
+  aspect-ratio: 1/1;
+}
+
 .card:hover .imageContainer {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12),
               0 0 0 4px rgba(255, 255, 255, 1);

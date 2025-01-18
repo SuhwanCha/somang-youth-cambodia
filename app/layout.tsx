@@ -34,7 +34,7 @@ export default function RootLayout({
             backgroundAttachment: 'fixed',
             backgroundPosition: 'center',
             minHeight: '100vh',
-            maxWidth: '768',
+            maxWidth: '768px',
             margin: '0 auto',
             backgroundColor: 'white',
           }}

@@ -1,13 +1,13 @@
 "use client";
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Image from "next/image";
 import { PrayerTopic } from '../types';
 import data from '../data/people.json';
 import styles from './page.module.css';
 
-export default function Home() {
+function ClientContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const name = searchParams.get('name');
@@ -99,7 +99,7 @@ export default function Home() {
           <div key={index} className={styles.card}
             onClick={() => handleClick(person.name)}
           >
-            <div className={styles.imageContainer}>
+            <div className={`${styles.imageContainer} ${index < 12 ? styles.fourThree : styles.oneOne}`}>
               <Image
                 src={`/static/people/${person.name}.png`}
                 alt={person.name}
@@ -249,5 +249,25 @@ export default function Home() {
         ></div>
       )}
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          padding: '20px'
+        }}>
+          <div>Loading...</div>
+        </div>
+      }
+    >
+      <ClientContent />
+    </Suspense>
   );
 }
