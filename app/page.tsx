@@ -1,101 +1,239 @@
+"use client";
+
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Image from "next/image";
+import { PrayerTopic } from '../types';
+import data from '../data/people.json';
+import styles from './page.module.css';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const name = searchParams.get('name');
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState<PrayerTopic | null>(null);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const people: PrayerTopic[] = data;
+
+  useEffect(() => {
+    if (name) {
+      const person = people.find(p => p.name === name);
+      setSelectedPerson(person || null);
+      setIsPopupVisible(true);
+    } else {
+      setSelectedPerson(null);
+      setIsPopupVisible(false);
+    }
+  }, [name, people]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        setShowScrollIndicator(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleClick = (name: string) => {
+    router.replace(`/?name=${encodeURIComponent(name)}`, { scroll: false });
+  };
+
+  const closePopup = () => {
+    router.replace('/', { scroll: false });
+  };
+
+  const handleScrollClick = () => {
+    const gridElement = document.querySelector(`.${styles.guideText}`);
+    if (gridElement) {
+      gridElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setShowScrollIndicator(false);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px',
+      }}
+    >
+      <Image
+        src="/static/header.png"
+        alt="Header Image"
+        width={500}
+        height={200}
+        style={{ width: '100%', height: 'auto' }}
+      />
+
+      <p className={styles.guideText}>
+        👆 사진을 클릭하면 각 선교팀원의 기도제목을 볼 수 있습니다
+      </p>
+
+      {showScrollIndicator && (
+        <div
+          className={styles.scrollIndicator}
+          onClick={handleScrollClick}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleScrollClick();
+            }
+          }}
+        >
+          <span className={styles.scrollText}>아래로 스크롤하여<br />선교팀원들을 만나보세요</span>
+          <div className={styles.scrollArrow}></div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      )}
+
+      <div className={styles.grid}>
+        {people.map((person, index) => (
+          <div key={index} className={styles.card}
+            onClick={() => handleClick(person.name)}
+          >
+            <div className={styles.imageContainer}>
+              <Image
+                src={`/static/people/${person.name}.png`}
+                alt={person.name}
+                fill
+                className={styles.image}
+              />
+            </div>
+            <p className={styles.name}>{person.name.replace('_', ' ')}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* 팝업 렌더링 */}
+      {isPopupVisible && selectedPerson && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            padding: '24px',
+            zIndex: 1000,
+            maxWidth: '90%',
+            width: '400px',
+            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.15)',
+            border: '1px solid rgba(0, 0, 0, 0.1)',
+          }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '20px',
+            marginBottom: '24px',
+            borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+            paddingBottom: '20px',
+          }}>
+            <div style={{
+              position: 'relative',
+              width: '80px',
+              height: '80px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+              borderRadius: '50%',
+            }}>
+              <Image
+                src={`/static/people/${selectedPerson.name}.png`}
+                alt={selectedPerson.name}
+                fill
+                style={{
+                  objectFit: 'cover',
+                  borderRadius: '50%',
+                }}
+              />
+            </div>
+            <h2 style={{
+              margin: 0,
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              color: '#333',
+            }}>
+              {selectedPerson.name.replace('_', ' ')}
+            </h2>
+          </div>
+
+          <ol style={{
+            paddingLeft: '24px',
+            margin: '0',
+            listStyleType: 'decimal',
+            counterReset: 'item',
+            fontSize: '0.95rem',
+            lineHeight: '1.5',
+          }}>
+            {selectedPerson.prayerTopics.map((topic, index) => (
+              <li
+                key={index}
+                style={{
+                  marginBottom: '12px',
+                  paddingLeft: '8px',
+                  listStylePosition: 'outside',
+                  color: '#444',
+                  fontSize: '1.2rem',
+                }}
+              >
+                {topic}
+              </li>
+            ))}
+          </ol>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginTop: '24px',
+            paddingTop: '16px',
+            borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+          }}>
+            <button
+              onClick={closePopup}
+              style={{
+                padding: '8px 20px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: '#000',
+                color: '#fff',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+                transition: 'background-color 0.2s',
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#333'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#000'}
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 팝업 배경 */}
+      {isPopupVisible && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(2px)',
+            zIndex: 999,
+          }}
+          onClick={closePopup}
+        ></div>
+      )}
     </div>
   );
 }
