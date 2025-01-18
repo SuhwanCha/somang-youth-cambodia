@@ -11,8 +11,12 @@
     },
     "rewrites": [
       {
-        "source": "**",
+        "source": "!/static/**",
         "destination": "/index.html"
+      },
+      {
+        "source": "**",
+        "function": "nextApp"
       }
     ]
   }
